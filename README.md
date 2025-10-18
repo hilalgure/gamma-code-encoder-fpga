@@ -88,7 +88,7 @@ Gamma-Code-Encoder/
 ├── LICENSE
 ├── .gitignore
 └── README.md
-´´´
+```
 ---
 
 ## 📄 Report
