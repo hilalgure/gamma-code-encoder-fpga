@@ -1,0 +1,109 @@
+\documentclass[conference]{IEEEtran}
+
+% --- Packages ---
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{xcolor} % (listings needs it; IEEE allows)
+\lstdefinelanguage{VHDL}{
+  morekeywords={library,use,all,entity,is,port,in,out,architecture,of,begin,end,
+  signal,process,if,then,else,elsif,when,case,generic,map,component,downto,
+  std_logic,std_logic_vector,integer,rising_edge},
+  sensitive=true,
+  morecomment=[l]--,
+  morestring=[b]"
+}
+\lstset{language=VHDL,basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible}
+
+\begin{document}
+
+\title{Gamma-Code Encoder on FPGA Using a Moore Finite State Machine}
+
+\author{
+\IEEEauthorblockN{Hilal Gure}
+\IEEEauthorblockA{Email: hilal_shide@live.com}
+}
+
+\maketitle
+
+\begin{abstract}
+We implement a modular \emph{Gamma-code encoder} in VHDL on an FPGA. A Moore finite state machine (FSM) interprets 2-bit tokens (dot, dash, bar) from a shift register and drives an LED blink pattern with a 0.25~s base tick, while the selected symbol is shown on a seven-segment display. The design includes a lookup table (LUT), shift register, quarter-second clock divider, and output display logic. We provide unit testbenches for each module in ModelSim and validate correct timing and sequencing on hardware. The approach demonstrates clear module boundaries, robust timing based on a generic counter, and practical debugging strategies for FSM-based designs.
+\end{abstract}
+
+\begin{IEEEkeywords}
+VHDL, FPGA, Finite State Machine, Timing, Gamma Code, Seven-Segment Display.
+\end{IEEEkeywords}
+
+\section{Introduction}
+The purpose of this project is to design and implement a Gamma-code encoder using a Finite State Machine (FSM) on an FPGA board. The Gamma code uses a pattern of pulses with different durations to represent symbols such as letters, numbers, and special characters. Each symbol is encoded as a sequence of short (dot), medium (dash), and long (bar) pulses.
+
+A dot is defined as four consecutive 0.25-second pulses, a dash lasts 0.75 seconds, and a bar 1.5 seconds. The system uses the switches \texttt{SW[3:0]} and push-buttons \texttt{KEY[1:0]} as inputs. The switches select which symbol to encode, while \texttt{KEY1} starts the display of the Gamma code on \texttt{LEDR0}. The button \texttt{KEY0} functions as an active-high reset and lights up \texttt{LEDR9}.
+
+The goal is to design a digital system capable of translating a selected symbol into LED blinks with correct timing durations. The solution is implemented in VHDL and verified through both simulation and hardware testing on an FPGA.
+\section{System Design}
+The design is divided into several submodules, each with a distinct function. This modular structure improves readability, simplifies debugging, and allows isolated testing of each part. Some modules, such as the seven-segment display driver, shift register, and counter, were reused and adapted from earlier laboratory exercises.
+
+The top-level entity (\texttt{gamma\_code\_encoder}) connects all submodules and handles input and output between switches, buttons, LEDs, and the display.
+
+\subsection{Gamma Look-Up Table (LUT)}
+The LUT takes a 4-bit value from the switches and converts it to an 8-bit Gamma code. Each code represents a symbol or character and consists of four 2-bit sequences where:
+\begin{itemize}
+    \item \texttt{00} = short pulse (dot)
+    \item \texttt{01} = medium pulse (dash)
+    \item \texttt{10} = long pulse (bar)
+    \item \texttt{11} = null (no pulse)
+\end{itemize}
+The mapping is hardcoded using a \texttt{case} statement.
+
+\subsection{Shift Register}
+The shift register stores the 8-bit Gamma code and outputs 2 bits at a time to the FSM. After each shift, the lower bits are filled with \texttt{00} to maintain length. The FSM uses the received 2-bit sequence to determine the duration of each LED blink.
+
+\subsection{Quarter-Second Clock Generator}
+This module divides the FPGA’s 50~MHz input clock by a constant value ($k = 12{,}500{,}000$) to generate a tick every 0.25~s. The tick signal (\texttt{tick\_qsec}) serves as the base timing for the FSM.
+
+\subsection{Finite State Machine (FSM)}
+The FSM acts as the control unit and determines how the Gamma code is processed and displayed through LED blinks. Implemented as a Moore machine, the LED output depends only on the current state, ensuring predictable timing behavior. The FSM consists of five main states:
+
+\begin{itemize}
+  \item \texttt{S1\_LOAD}: Load new Gamma code from LUT into the shift register.
+  \item \texttt{S2\_CHECK}: Check if more data remains.
+  \item \texttt{S3\_BLINK}: Turn LED on for the duration defined by the 2-bit code.
+  \item \texttt{S4\_PAUSE}: Short pause between symbols.
+  \item \texttt{S5\_DONE}: Wait for a new start signal.
+\end{itemize}
+
+\section{Verification}
+Each submodule was verified individually using dedicated testbenches in ModelSim. The testbenches simulate input stimuli and observe outputs to confirm correct functionality.
+
+\subsection{Gamma LUT}
+The LUT testbench cycles through all valid 4-bit inputs and checks that the corresponding 8-bit Gamma codes match the specification. Invalid inputs such as \texttt{1111} are handled correctly.
+
+\subsection{Shift Register}
+This testbench validates that each shift operation correctly outputs the upper 2 bits and appends \texttt{00} at the least significant end. The \texttt{finished} signal is asserted after four shifts, confirming that all data have been sent.
+
+\subsection{Counter and FSM}
+The counter is verified to produce a rollover signal exactly every 0.25 seconds (simulated with a lower value of $k$ for speed). The FSM testbench confirms proper state transitions, LED timing, and correct behavior upon reset and start conditions.
+
+\subsection{Seven-Segment Display}
+Tests confirm that the 4-bit input value is translated to the correct segment pattern for each symbol. Invalid inputs result in a blank display.
+
+\section{Results and Discussion}
+The system performs as expected. When \texttt{KEY1} is pressed, \texttt{LEDR0} blinks according to the Gamma code of the selected symbol. The LUT generates the correct 8-bit sequence, the shift register outputs the correct 2-bit tokens, and the FSM interprets them accurately, producing timed LED blinks.
+
+The seven-segment display correctly shows the chosen symbol, and the quarter-second counter provides a stable timing base. Debugging LEDs were used to visualize internal signals such as \texttt{tick\_qsec}, \texttt{shift\_en}, \texttt{load\_reg}, and \texttt{finished}, helping to identify timing issues.
+
+Common challenges included incorrect tick generation and FSM synchronization issues. Replacing an earlier custom counter with the reusable generic \texttt{counter\_slow} module resolved instability. Testing with ModelSim significantly improved debugging efficiency.
+
+Three key lessons were learned:
+\begin{itemize}
+  \item Start simulation early in ModelSim to identify design issues before hardware synthesis.
+  \item Keep FSM logic simple and deterministic; unnecessary states complicate debugging.
+  \item Use visual debug signals (LEDs) to monitor internal states on hardware.
+\end{itemize}
+
+\section{Conclusion}
+A functional Gamma-code encoder controlled by a Moore FSM was successfully designed and implemented in VHDL. The system correctly interprets user input from switches and buttons and outputs the corresponding timed LED blink sequence. 
+
+This project provided hands-on experience in modular VHDL design, FSM control, and simulation-based verification. The importance of early simulation and incremental testing was highlighted throughout development. Future improvements could include adding sound output, supporting more symbols, or providing visual feedback through an LCD or VGA interface.
