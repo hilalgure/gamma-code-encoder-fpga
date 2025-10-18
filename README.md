@@ -1,48 +1,115 @@
-# Gamma Code Encoder (FPGA - VHDL)
+# Gamma Code Encoder (FPGA – VHDL)
 
-This project implements a **Gamma-code encoder** using **Finite State Machine (FSM)** design on an FPGA.  
-It converts input symbols from switches into LED blink patterns representing dot, dash, and bar pulses.
+**Author:** [Hilal Gure](https://github.com/hilalgure)  
+**Email:** hilal_shide@live.com  
+**Year:** 2025  
 
----
+This repository contains a modular **Gamma-code encoder** implemented in **VHDL** and verified with **ModelSim**.  
+A finite-state machine (FSM) converts 2-bit pulse tokens (dot/dash/bar) into LED blink patterns with a 0.25 s base tick, while the chosen symbol is shown on a seven-segment display.
 
-## 📘 Overview
-- Language: **VHDL**
-- Platform: **Intel/Altera FPGA (Quartus + ModelSim)**
-- Author: *Hilal Gure*
-- Date: *Spring 2025*
-
----
-
-## 🧩 Folder Structure
-| Folder | Description |
-|--------|--------------|
-| `src/` | VHDL source files for encoder and submodules |
-| `testbench/` | Testbenches for ModelSim simulations |
-| `docs/` | Report, figures, and documentation |
+> **Demo target:** Intel/Altera FPGA (50 MHz system clock)  
+> **Tools:** Quartus Prime, ModelSim
 
 ---
 
-## ⚙️ Features
-- Modular VHDL design (LUT, shift register, FSM, seven-segment display)
-- Time-controlled LED blink using a 0.25 s base clock
-- Fully simulated in ModelSim
-- Synthesized and tested on FPGA hardware
+## 🔧 Features
+- Clean **modular architecture**: LUT → Shift Register → FSM → LED/7-seg
+- **Quarter-second clock** generator from 50 MHz
+- **Testbenches** for each submodule (self-contained simulations)
+- Ready **IEEE-style report** (see `/docs`) and LaTeX template
 
 ---
 
-## 🧪 Report
-📄 [Read full report (PDF)](./docs/Gamma_Code_Encoder_Report.pdf)
+## 🗂 Repository Structure
+Gamma-Code-Encoder/
+│
+├── src/                     # VHDL source (design)
+│   ├── gamma_code_encoder.vhd
+│   ├── gamma_lut.vhd
+│   ├── gamma_shift_reg.vhd
+│   ├── fsm.vhd
+│   ├── seven_seg.vhd
+│   └── counter_slow.vhd
+│
+├── testbench/               # ModelSim testbenches
+│   ├── tb_gamma_lut.vhd
+│   ├── tb_gamma_shift_reg.vhd
+│   ├── tb_fsm.vhd
+│   ├── tb_counter_slow.vhd
+│   └── tb_seven_seg.vhd
+│
+├── docs/                    # Reports, figures, LaTeX
+│   ├── Gamma_Code_Encoder_Report.pdf      # English PDF
+│   ├── original_norwegian.pdf             
+│   └── latex/
+│       ├── main.tex
+│       ├── references.bib
+│       └── figures/                       # images for the paper
+│
+├── LICENSE
+├── .gitignore
+└── README.md
+
 
 ---
 
-## 🚀 How to Run
-1. Open the project in **Quartus Prime**.
-2. Compile and program onto FPGA.
-3. Use switches `SW[3:0]` to select symbol, and button `KEY[1:0]` to start/reset.
-4. Observe LED and 7-segment display outputs.
+## ⚙️ Hardware Mapping
+
+- **SW[3:0]**: Select symbol
+- **KEY1**: Start encoding/blink sequence (active low in code → wire as needed)
+- **KEY0**: Reset (active low in code → `LEDR[9]` indicates reset)
+- **LEDR[0]**: Output blink according to Gamma code
+- **HEX0**: Selected symbol (7-segment)
+
+Pulse tokens (2-bit):
+- `00` → **dot** (0.25 s)  
+- `01` → **dash** (0.75 s)  
+- `10` → **bar**  (1.50 s)
+
+---
+
+## 🚀 Quick Start
+
+### Simulation (ModelSim)
+1. Open ModelSim and create a project.
+2. Add files in `src/` and the desired `testbench/tb_*.vhd`.
+3. Set the testbench as top and **Run**.  
+   Waveforms verify LUT mapping, shift behavior, tick timing, and FSM sequencing.
+
+### FPGA (Quartus)
+1. Create a new Quartus project and add all files in `src/`.
+2. Assign pins for `CLOCK_50`, `SW[3:0]`, `KEY[1:0]`, `LEDR[9:0]`, `HEX0[6:0]`.
+3. Compile, program the board, and use switches & keys as above.
+
+---
+
+## 🧩 Design Modules
+- `gamma_lut.vhd` – maps `SW[3:0]` to an 8-bit Gamma code (four 2-bit pulses)
+- `gamma_shift_reg.vhd` – shifts out 2-bit tokens (MSB first), asserts `finished` when empty
+- `counter_slow.vhd` – quarter-second tick from 50 MHz (generic `n`, `k`)
+- `fsm.vhd` – Moore FSM: `S1_LOAD → S2_CHECK → S3_BLINK → S4_PAUSE → S5_DONE`
+- `seven_seg.vhd` – displays chosen symbol on HEX0
+
+---
+
+## 📄 Report
+- 📘 **English PDF:** [`./docs/Gamma_Code_Encoder_Report.pdf`](./docs/Gamma_Code_Encoder_Report.pdf)  
+- ✍️ **LaTeX (IEEEtran) source:** `./docs/latex/` (build in Overleaf or locally)
 
 ---
 
 ## 📚 References
-- Harris & Harris, *Digital Design and Computer Architecture: RISC-V Edition*
-- Cohen, *Free Range VHDL*
+- D. M. Harris and S. L. Harris, *Digital Design and Computer Architecture: RISC-V Edition*, Morgan Kaufmann, 2022.  
+- B. Cohen, *Free Range VHDL: No Strings Attached!*, VhdlCohen Publishing, 2013.
+
+---
+
+## 📝 License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
+
+© 2025 **Hilal Gure**
+
+
