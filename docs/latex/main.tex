@@ -6,7 +6,10 @@
 \usepackage{amsmath, amssymb}
 \usepackage{url}
 \usepackage{listings}
-\usepackage{xcolor} % (listings needs it; IEEE allows)
+\usepackage{xcolor} % for listings
+\usepackage[hidelinks]{hyperref} % nice links (optional but helpful)
+
+% --- VHDL listings setup ---
 \lstdefinelanguage{VHDL}{
   morekeywords={library,use,all,entity,is,port,in,out,architecture,of,begin,end,
   signal,process,if,then,else,elsif,when,case,generic,map,component,downto,
@@ -15,15 +18,21 @@
   morecomment=[l]--,
   morestring=[b]"
 }
-\lstset{language=VHDL,basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible}
+\lstset{
+  language=VHDL,
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible
+}
 
 \begin{document}
 
 \title{Gamma-Code Encoder on FPGA Using a Moore Finite State Machine}
 
+% ---- FIXED AUTHOR BLOCK (single, correct form) ----
 \author{
 \IEEEauthorblockN{Hilal Gure}
-\IEEEauthorblockA{Email: hilal_shide@live.com}
+\IEEEauthorblockA{Email: \href{mailto:hilal_shide@live.com}{hilal\_shide@live.com}}
 }
 
 \maketitle
@@ -42,6 +51,7 @@ The purpose of this project is to design and implement a Gamma-code encoder usin
 A dot is defined as four consecutive 0.25-second pulses, a dash lasts 0.75 seconds, and a bar 1.5 seconds. The system uses the switches \texttt{SW[3:0]} and push-buttons \texttt{KEY[1:0]} as inputs. The switches select which symbol to encode, while \texttt{KEY1} starts the display of the Gamma code on \texttt{LEDR0}. The button \texttt{KEY0} functions as an active-high reset and lights up \texttt{LEDR9}.
 
 The goal is to design a digital system capable of translating a selected symbol into LED blinks with correct timing durations. The solution is implemented in VHDL and verified through both simulation and hardware testing on an FPGA.
+
 \section{System Design}
 The design is divided into several submodules, each with a distinct function. This modular structure improves readability, simplifies debugging, and allows isolated testing of each part. Some modules, such as the seven-segment display driver, shift register, and counter, were reused and adapted from earlier laboratory exercises.
 
@@ -65,7 +75,6 @@ This module divides the FPGA’s 50~MHz input clock by a constant value ($k = 12
 
 \subsection{Finite State Machine (FSM)}
 The FSM acts as the control unit and determines how the Gamma code is processed and displayed through LED blinks. Implemented as a Moore machine, the LED output depends only on the current state, ensuring predictable timing behavior. The FSM consists of five main states:
-
 \begin{itemize}
   \item \texttt{S1\_LOAD}: Load new Gamma code from LUT into the shift register.
   \item \texttt{S2\_CHECK}: Check if more data remains.
@@ -107,3 +116,9 @@ Three key lessons were learned:
 A functional Gamma-code encoder controlled by a Moore FSM was successfully designed and implemented in VHDL. The system correctly interprets user input from switches and buttons and outputs the corresponding timed LED blink sequence. 
 
 This project provided hands-on experience in modular VHDL design, FSM control, and simulation-based verification. The importance of early simulation and incremental testing was highlighted throughout development. Future improvements could include adding sound output, supporting more symbols, or providing visual feedback through an LCD or VGA interface.
+
+% (Optional) bibliography commands:
+% \bibliographystyle{IEEEtran}
+% \bibliography{references}
+
+\end{document}
