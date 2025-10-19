@@ -128,3 +128,35 @@ Gamma-Code-Encoder/
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)  
 This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.  
 © 2025 **Hilal Gure**
+
+---
+---
+
+## 🖼️ Figures and Waveforms Overview
+
+All block diagrams, schematics, and simulation waveforms are included in the repository under  
+[`docs/latex/figures/`](docs/latex/figures)
+
+| Category | File | Description |
+|-----------|------|-------------|
+| **FSM & Control** | [Gamma FSM.png](docs/latex/figures/Gamma%20FSM.png) | Finite State Machine (FSM) architecture showing timing, signal flow, and control of `led_out`, `shift_en`, and `load_reg`. |
+|  | [State machine viewer.png](docs/latex/figures/State%20machine%20viewer.png) | FSM state diagram with five states: `S1_LOAD`, `S2_CHECK`, `S3_BLINK`, `S4_PAUSE`, `S5_DONE`. |
+|  | [State table.png](docs/latex/figures/State%20table.png) | State transition table listing conditions for each transition (`start`, `empty`, `qsec_tick`, etc.). |
+| **Modules** | [Gamma LUT.png](docs/latex/figures/Gamma%20LUT.png) | Look-Up Table (LUT) mapping the 4-bit switch input (`SW[3:0]`) to an 8-bit Gamma code. |
+|  | [Skiftregister.png](docs/latex/figures/Skiftregister.png) | Shift register (`gamma_shift_reg`) that outputs 2-bit tokens sequentially and asserts `finished` when done. |
+|  | [Teller.png](docs/latex/figures/Teller.png) | Quarter-second counter (`counter_slow`) dividing the 50 MHz clock to generate `tick_qsec`. |
+| **Implementation Views** | [RTL VIEWER.png](docs/latex/figures/RTL%20VIEWER.png) | RTL schematic of the top-level Gamma-code encoder showing module interconnections. |
+|  | [Technology map viewer post mapping.png](docs/latex/figures/Technology%20map%20viewer%20post%20mapping.png) | Technology map after synthesis showing FPGA resource mapping and logic placement. |
+| **Simulation Waveforms** | [wavechart counter_slow.png](docs/latex/figures/wavechart%20counter_slow.png) | Testbench waveform confirming correct counter rollover and tick generation. |
+|  | [wavechart gamma LUT.png](docs/latex/figures/wavechart%20gamma%20LUT.png) | LUT waveform showing correct 8-bit Gamma codes for each 4-bit input. |
+|  | [wavechart gamma shift reg.png](docs/latex/figures/wavechart%20gamma%20shift%20reg.png) | Shift register waveform showing 2-bit token outputs and `finished` signal. |
+|  | [wavechart fsm.png](docs/latex/figures/wavechart%20fsm.png) | FSM waveform showing proper control of `load_reg`, `shift_en`, and `led_out`. |
+|  | [wavechart sevensegment.png](docs/latex/figures/wavechart%20sevensegment.png) | Seven-segment display waveform verifying symbol-to-segment decoding on `HEX0`. |
+
+---
+
+### 💡 Notes
+- All images are stored in: [`docs/latex/figures/`](docs/latex/figures)
+- They illustrate both the **design hierarchy** and the **simulation verification** process.
+- These figures correspond to the modules and results discussed in  
+  [`Gamma_Code_Encoder_Report.pdf`](docs/Gamma_Code_Encoder_Report.pdf) and [`original_norwegian.pdf`](docs/original_norwegian.pdf).
